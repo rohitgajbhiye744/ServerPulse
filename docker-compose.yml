@@ -1,0 +1,56 @@
+services:
+  database:
+    image: postgres:17-alpine
+    container_name: serverpulse-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: serverpulse_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your environment}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d serverpulse_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - serverpulse-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: serverpulse-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/serverpulse_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your environment}
+      SERVERPULSE_ADMIN_USERNAME: ${SERVERPULSE_ADMIN_USERNAME:?Set SERVERPULSE_ADMIN_USERNAME}
+      SERVERPULSE_ADMIN_PASSWORD: ${SERVERPULSE_ADMIN_PASSWORD:?Set SERVERPULSE_ADMIN_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - serverpulse-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: serverpulse-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - serverpulse-network
+
+volumes:
+  postgres_data:
+
+networks:
+  serverpulse-network:
+    driver: bridge

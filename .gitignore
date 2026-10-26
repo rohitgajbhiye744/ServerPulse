@@ -1,0 +1,32 @@
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Database backups
+backup/
+*.dump
+*.sql
+
+# Java / Maven
+**/target/
+
+# Node.js / React
+**/node_modules/
+**/dist/
+
+# IDE files
+.metadata/
+**/.settings/
+**/.project
+**/.classpath/
+**/.idea/
+**/.vscode/
+
+# Logs and operating system files
+*.log
+.DS_Store
+Thumbs.db
+
+# Local IDE modernization workflow
+.github/modernize/
